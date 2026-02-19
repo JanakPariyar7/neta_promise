@@ -202,6 +202,7 @@ async function sendVote(postId, voteType, button) {
 document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return;
+  const actionEl = target.closest('[data-action]');
 
   if (target.id === 'apply-filters') {
     resetFeedAndLoad();
@@ -227,15 +228,15 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
-  const action = target.getAttribute('data-action');
+  const action = actionEl?.getAttribute('data-action');
   if (!action) return;
 
-  const postId = Number(target.getAttribute('data-post-id'));
+  const postId = Number(actionEl?.getAttribute('data-post-id'));
 
   if (action === 'vote') {
-    const voteType = target.getAttribute('data-type');
+    const voteType = actionEl?.getAttribute('data-type');
     if (voteType === 'up' || voteType === 'down') {
-      sendVote(postId, voteType, target);
+      sendVote(postId, voteType, actionEl);
     }
     return;
   }
@@ -248,7 +249,7 @@ document.addEventListener('click', async (event) => {
   }
 
   if (action === 'copy') {
-    const url = target.getAttribute('data-url') || '';
+    const url = actionEl?.getAttribute('data-url') || '';
     await navigator.clipboard.writeText(url);
     showToast('Link copied', 'success');
   }

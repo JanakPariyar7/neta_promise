@@ -518,7 +518,7 @@ app.get('/', async (req, res) => {
     );
 
     if (post) {
-      const previewImage = post.photo_path || post.logo_path ? absUrl(req, assetUrl(post.photo_path || post.logo_path)) : '';
+      const previewImage = post.photo_path ? absUrl(req, assetUrl(post.photo_path)) : '';
       const previewVideo = post.video_path ? absUrl(req, assetUrl(post.video_path)) : '';
       const title = `${post.politician_name}${post.party_name ? ` (${post.party_name})` : ''} - Promise`;
       const description = `${post.promise_text}`.slice(0, 220);
@@ -593,13 +593,28 @@ app.get('/politicians/:id', async (req, res) => {
     [politicianId]
   );
 
+  const totals = posts.reduce(
+    (acc, post) => {
+      acc.up += Number(post.upvotes || 0);
+      acc.down += Number(post.downvotes || 0);
+      return acc;
+    },
+    { up: 0, down: 0 }
+  );
+
   const postHtml = posts
     .map(
       (post) => `
       <article class="post-card">
-        <video controls playsinline src="${escapeHtml(assetUrl(post.video_path))}"></video>
-        <p>${escapeHtml(post.promise_text)}</p>
-        <p class="meta">${escapeHtml(post.location || 'N/A')} | "गर्छ" ${post.upvotes} | "गफाडी" ${post.downvotes}</p>
+        <div class="video-wrap">
+          <video controls playsinline src="${escapeHtml(assetUrl(post.video_path))}"></video>
+        </div>
+        <h3 class="post-title">${escapeHtml(post.promise_text)}</h3>
+        <p class="meta">${escapeHtml(post.location || 'N/A')} | 👍 ${post.upvotes} | 👎 ${post.downvotes}</p>
+        <div class="actions">
+          <button class="vote-up" data-action="vote" data-type="up" data-post-id="${post.id}" aria-label="Upvote post">👍 <span>${post.upvotes}</span></button>
+          <button class="vote-down" data-action="vote" data-type="down" data-post-id="${post.id}" aria-label="Downvote post">👎 <span>${post.downvotes}</span></button>
+        </div>
       </article>`
     )
     .join('');
@@ -611,6 +626,7 @@ app.get('/politicians/:id', async (req, res) => {
     <h1>${escapeHtml(politician.name)}</h1>
     <p>${politician.party_id ? `<a href="/parties/${politician.party_id}">${escapeHtml(politician.party_name)}</a>` : 'Independent'}</p>
     <p>${escapeHtml(politician.bio || '')}</p>
+    <p class="meta">Total Public Votes: 👍 ${totals.up} | 👎 ${totals.down}</p>
   </section>
   <section class="feed">
     ${postHtml || '<p>No promises posted yet.</p>'}
