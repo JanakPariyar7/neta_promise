@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: neta-promise
+    runtime: node
+    plan: free
+    autoDeploy: true
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_DB_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET_PARTY_LOGOS
+        value: party-logos
+      - key: SUPABASE_BUCKET_POLITICIAN_PHOTOS
+        value: politician-photos
+      - key: SUPABASE_BUCKET_POST_VIDEOS
+        value: post-videos
+      - key: SUPABASE_BUCKET_AD_IMAGES
+        value: ad-images
+      - key: SUPABASE_BUCKET_SUBMISSIONS_VIDEOS
+        value: submissions-videos
+      - key: SESSION_SECRET
+        sync: false

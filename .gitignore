@@ -1,0 +1,4 @@
+node_modules/
+.env
+infra/render.yaml
+.env.example
