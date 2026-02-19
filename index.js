@@ -174,18 +174,32 @@ function publicShell(title, body, extraJs = '', metaTags = '') {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)}</title>
   ${metaTags}
+  <link rel="icon" type="image/png" href="/uploads/logo.png" />
   <link rel="stylesheet" href="/public/css/style.css" />
 </head>
 <body>
   <header class="topbar">
-    <a href="/" class="brand">Neta Promise</a>
-    <a href="/submit" class="submit-cta">Submit Promise</a>
+    <a href="/" class="brand"><img src="/uploads/logo.png" alt="Neta Promise" /><span>Neta Promise Records</span></a>
+    <div class="top-actions">
+      <button type="button" id="donate-btn" class="donate-btn">Donate</button>
+      <a href="/submit" class="submit-cta">Submit</a>
+    </div>
   </header>
+  <div id="donate-modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="donate-title">
+      <button type="button" id="donate-close" class="modal-close" aria-label="Close">x</button>
+      <h2 id="donate-title">Support Transparent Public Records</h2>
+      <p>Assist me to maintain the server costs.</p>
+      <img src="/uploads/account-qr.jpeg" alt="Donation QR code" class="donate-qr" />
+    </div>
+  </div>
   ${body}
   <script src="/public/js/app.js"></script>
   <script>
     (function () {
       const initSelectSearch = (root) => {
+        const enhance = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (!enhance) return;
         const selects = Array.from(root.querySelectorAll('select.searchable-select'));
         selects.forEach((select) => {
           if (select.dataset.searchReady === '1') return;
@@ -248,6 +262,24 @@ function publicShell(title, body, extraJs = '', metaTags = '') {
       };
 
       initSelectSearch(document);
+
+      const donateBtn = document.getElementById('donate-btn');
+      const donateModal = document.getElementById('donate-modal');
+      const donateClose = document.getElementById('donate-close');
+      if (donateBtn && donateModal && donateClose) {
+        const closeModal = () => {
+          donateModal.classList.remove('open');
+          donateModal.setAttribute('aria-hidden', 'true');
+        };
+        donateBtn.addEventListener('click', () => {
+          donateModal.classList.add('open');
+          donateModal.setAttribute('aria-hidden', 'false');
+        });
+        donateClose.addEventListener('click', closeModal);
+        donateModal.addEventListener('click', (e) => {
+          if (e.target === donateModal) closeModal();
+        });
+      }
     })();
   </script>
   ${extraJs}
@@ -290,6 +322,7 @@ function adminShell(title, body) {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)}</title>
+  <link rel="icon" type="image/png" href="/uploads/logo.png" />
   <link rel="stylesheet" href="/public/css/admin.css" />
 </head>
 <body>
@@ -331,6 +364,8 @@ function adminShell(title, body) {
       });
 
       const initSelectSearch = (root) => {
+        const enhance = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (!enhance) return;
         const selects = Array.from(root.querySelectorAll('select.searchable-select'));
         selects.forEach((select) => {
           if (select.dataset.searchReady === '1') return;
@@ -412,17 +447,19 @@ app.get('/', async (req, res) => {
 
   const body = `
   <section class="hero">
-    <h1>Track Political Promises Publicly</h1>
-    <p>Watch promise videos, react with upvote or downvote, and share verified claims with your network.</p>
+    <h1>Public Accountability Archive For Leaders</h1>
+    <p>This platform keeps file records of promises, public responses, and evidence so accountability remains visible over time.</p>
     <div class="emotion-legend">
-      <span class="chip chip-neutral">Trending</span>
-      <span class="chip chip-hope">Optimistic</span>
-      <span class="chip chip-concern">Pessimistic</span>
-      <span class="chip chip-fresh">New</span>
+      <span class="chip chip-neutral">Most Discussed Records</span>
+      <span class="chip chip-hope">Most Supported</span>
+      <span class="chip chip-concern">Most Disputed</span>
+      <span class="chip chip-fresh">Latest Records</span>
     </div>
   </section>
-
-  <section class="feed-controls">
+  <div class="filter-toggle-wrap">
+    <button id="toggle-filters" class="secondary-btn" type="button">Show Filters</button>
+  </div>
+  <section id="filter-panel" class="feed-controls is-collapsed">
     <label>Politician
     <select id="filter-politician" class="searchable-select" data-search-placeholder="Search politician">
       <option value="">All Politicians</option>
@@ -443,10 +480,10 @@ app.get('/', async (req, res) => {
     </label>
     <label>Mood / Sort
     <select id="filter-sort">
-      <option value="trending">Trending</option>
-      <option value="new">New</option>
-      <option value="optimistic">Most Upvoted</option>
-      <option value="pessimistic">Most Downvoted</option>
+      <option value="trending">Most Discussed Records</option>
+      <option value="new">Latest Records</option>
+      <option value="optimistic">Most Supported</option>
+      <option value="pessimistic">Most Disputed</option>
     </select>
     </label>
     <button id="apply-filters">Apply</button>
@@ -502,8 +539,8 @@ app.get('/', async (req, res) => {
 app.get('/submit', (_req, res) => {
   const body = `
   <section class="card">
-    <h1>Submit a Promise</h1>
-    <p>Share a promise video link with admins for review.</p>
+    <h1>Submit A Record For Public Accountability</h1>
+    <p>Share credible promise evidence so this archive remains a trusted public file record.</p>
     <form method="post" action="/api/submissions" class="form-grid">
       <label>Your Name
         <input name="submitter_name" type="text" maxlength="120" required />
@@ -562,13 +599,14 @@ app.get('/politicians/:id', async (req, res) => {
       <article class="post-card">
         <video controls playsinline src="${escapeHtml(assetUrl(post.video_path))}"></video>
         <p>${escapeHtml(post.promise_text)}</p>
-        <p class="meta">${escapeHtml(post.location || 'N/A')} | 👍 ${post.upvotes} | 👎 ${post.downvotes}</p>
+        <p class="meta">${escapeHtml(post.location || 'N/A')} | "गर्छ" ${post.upvotes} | "गफाडी" ${post.downvotes}</p>
       </article>`
     )
     .join('');
 
   const body = `
   <section class="card">
+    <p class="trust-note">Public File Record</p>
     ${politician.photo_path ? `<img class="profile-photo" src="${escapeHtml(assetUrl(politician.photo_path))}" alt="${escapeHtml(politician.name)}" />` : ''}
     <h1>${escapeHtml(politician.name)}</h1>
     <p>${politician.party_id ? `<a href="/parties/${politician.party_id}">${escapeHtml(politician.party_name)}</a>` : 'Independent'}</p>
@@ -601,6 +639,7 @@ app.get('/parties/:id', async (req, res) => {
 
   const body = `
   <section class="card">
+    <p class="trust-note">Party Record Archive</p>
     ${party.logo_path ? `<img class="profile-photo" src="${escapeHtml(assetUrl(party.logo_path))}" alt="${escapeHtml(party.name)}" />` : ''}
     <h1>${escapeHtml(party.name)}</h1>
     <p>${escapeHtml(party.description || '')}</p>

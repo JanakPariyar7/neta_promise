@@ -50,6 +50,32 @@ body {
   text-decoration: none;
   font-weight: 800;
   letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.donate-btn {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: #e8f7ff;
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .submit-cta {
@@ -61,6 +87,49 @@ body {
   font-size: 14px;
   font-weight: 800;
   border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 23, 35, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  padding: 16px;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-card {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  padding: 16px;
+  position: relative;
+  text-align: center;
+}
+
+.modal-close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  border: 0;
+  background: transparent;
+  color: #6a7681;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.donate-qr {
+  width: 220px;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
 }
 
 .hero {
@@ -130,6 +199,16 @@ body {
   padding: 10px;
   max-width: 760px;
   margin: 0 auto;
+}
+
+.filter-toggle-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+.feed-controls.is-collapsed {
+  display: none;
 }
 
 .feed-controls label {
@@ -269,6 +348,15 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
+}
+
+.trust-note {
+  margin: 0 0 6px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .video-wrap {

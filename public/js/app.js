@@ -56,8 +56,8 @@ function renderPost(post) {
         <video controls playsinline preload="metadata" src="${escapeHtml(assetUrl(post.video_path))}"></video>
       </div>
       <div class="actions">
-        <button class="vote-up" data-action="vote" data-type="up" data-post-id="${post.id}" aria-label="Upvote post">👍 <span>${post.upvotes}</span></button>
-        <button class="vote-down" data-action="vote" data-type="down" data-post-id="${post.id}" aria-label="Downvote post">👎 <span>${post.downvotes}</span></button>
+        <button class="vote-up" data-action="vote" data-type="up" data-post-id="${post.id}" aria-label="Upvote post">गर्छ <span>${post.upvotes}</span></button>
+        <button class="vote-down" data-action="vote" data-type="down" data-post-id="${post.id}" aria-label="Downvote post">गफाडी <span>${post.downvotes}</span></button>
         <button class="share-toggle-btn" data-action="share-toggle" data-post-id="${post.id}" aria-label="Share post">${shareIcon}<span>Share</span></button>
       </div>
       <div class="share-row" data-share-row="${post.id}">
@@ -83,6 +83,14 @@ function updateLoadMoreButton() {
   if (!button) return;
   button.disabled = !state.hasMore || state.loading;
   button.textContent = state.loading ? 'Loading...' : state.hasMore ? 'Load more' : 'No more posts';
+}
+
+function setFilterPanelVisible(isVisible) {
+  const panel = document.getElementById('filter-panel');
+  const toggle = document.getElementById('toggle-filters');
+  if (!panel || !toggle) return;
+  panel.classList.toggle('is-collapsed', !isVisible);
+  toggle.textContent = isVisible ? 'Hide Filters' : 'Show Filters';
 }
 
 async function loadFeed() {
@@ -116,7 +124,7 @@ async function loadFeed() {
     }
 
     if (!data.posts.length && state.page === 1) {
-      stateEl.textContent = 'No posts found for this filter.';
+      stateEl.textContent = 'No public records found for the selected filters.';
       state.hasMore = false;
       return;
     }
@@ -132,7 +140,7 @@ async function loadFeed() {
     });
 
     state.hasMore = data.hasMore;
-    stateEl.textContent = `Showing page ${data.page} of ${data.totalPages} (${data.total} total posts)`;
+    stateEl.textContent = `Showing page ${data.page} of ${data.totalPages} (${data.total} accountability records)`;
   } catch (_err) {
     showToast('Failed to load posts', 'error');
   } finally {
@@ -200,6 +208,12 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  if (target.id === 'toggle-filters') {
+    const panel = document.getElementById('filter-panel');
+    if (panel) setFilterPanelVisible(panel.classList.contains('is-collapsed'));
+    return;
+  }
+
   if (target.id === 'clear-filters') {
     clearFiltersAndLoad();
     return;
@@ -241,5 +255,6 @@ document.addEventListener('click', async (event) => {
 });
 
 window.addEventListener('load', () => {
+  setFilterPanelVisible(false);
   resetFeedAndLoad();
 });
